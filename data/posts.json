@@ -1,0 +1,44 @@
+[
+  {
+    "id": 1773721854734,
+    "name": "あ",
+    "reading": "あ",
+    "approved": true,
+    "points": 5,
+    "entries": [
+      {
+        "team": "1班",
+        "imageUrl": "/uploads/1773721854490.jpg",
+        "createdAt": 1773721854734
+      }
+    ]
+  },
+  {
+    "id": 1773724163455,
+    "name": "い",
+    "reading": "い",
+    "approved": true,
+    "points": 5,
+    "entries": [
+      {
+        "team": "1班",
+        "imageUrl": "/uploads/1773724163411.jpg",
+        "createdAt": 1773724163455
+      }
+    ]
+  },
+  {
+    "id": 1773724222258,
+    "name": "あい",
+    "reading": "あい",
+    "approved": true,
+    "points": 5,
+    "entries": [
+      {
+        "team": "2班",
+        "imageUrl": "/uploads/1773724222221.jpg",
+        "createdAt": 1773724222258
+      }
+    ]
+  }
+]
