@@ -7,7 +7,7 @@ export const pointMissions = [
     requiresEvidence: true,
     evidenceType: "image",
     adminOnly: false,
-    description: "平野とのツーショット写真を撮る",
+    description: "平野との写真を撮る!!",
     exampleUrl: "/examples/hirano.jpg",
   },
   {
@@ -18,7 +18,7 @@ export const pointMissions = [
     requiresEvidence: true,
     evidenceType: "image",
     adminOnly: false,
-    description: "徳力とのツーショット写真を撮る",
+    description: "徳力との写真を撮る!!",
     exampleUrl: "/examples/tokuriki.jpg",
   },
   {
@@ -29,7 +29,7 @@ export const pointMissions = [
     requiresEvidence: true,
     evidenceType: "image",
     adminOnly: false,
-    description: "松井とのツーショット写真を撮る",
+    description: "松井との写真を撮る!!",
     exampleUrl: "/examples/matsui.jpg",
   },
   {
@@ -143,3 +143,6 @@ export const pointMissions = [
     exampleUrl: "/examples/gomiboke.jpg",
   },
 ];
+export function getMissionByKey(key: string) {
+  return pointMissions.find((m) => m.key === key);
+}

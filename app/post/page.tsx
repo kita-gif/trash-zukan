@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type CSSProperties } from "react";
 
 export default function PostPage() {
   const [file, setFile] = useState<File | null>(null);
@@ -208,7 +208,7 @@ export default function PostPage() {
   );
 }
 
-const overlayStyle = {
+const overlayStyle: CSSProperties = {
   position: "fixed",
   inset: 0,
   background: "rgba(0,0,0,0.4)",
@@ -217,22 +217,22 @@ const overlayStyle = {
   alignItems: "center",
 };
 
-const cardWrapStyle = {
+const cardWrapStyle: CSSProperties = {
+  position: "relative",
   animation: "pop 1s ease forwards",
 };
 
-const cardStyle = {
+const cardStyle: CSSProperties = {
   width: 260,
   background: "#fff",
   borderRadius: 12,
   overflow: "hidden",
 };
 
-const flashStyle = {
+const flashStyle: CSSProperties = {
   position: "absolute",
   width: 80,
   height: 300,
-  background:
-    "linear-gradient(to right, transparent, white, transparent)",
+  background: "linear-gradient(to right, transparent, white, transparent)",
   animation: "flash 1s",
 };

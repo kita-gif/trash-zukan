@@ -143,3 +143,6 @@ export const pointMissions = [
     exampleUrl: "/examples/gomiboke.jpg",
   },
 ];
+export function getMissionByKey(key: string) {
+  return pointMissions.find((m) => m.key === key);
+}
