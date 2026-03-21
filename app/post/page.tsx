@@ -2,7 +2,7 @@
 
 import { useState, type CSSProperties } from "react";
 import imageCompression from "browser-image-compression";
-import { supabase } from "../lib/supabase";
+import { supabase } from "../../lib/supabase";
 
 // 🔥 ここに置く（超重要）
 const overlayStyle: CSSProperties = {
