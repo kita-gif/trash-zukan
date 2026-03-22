@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { supabase } from "@/lib/supabase";
 import { pointMissions } from "@/lib/pointMissions";
 
 export default function PointPostPage() {
@@ -31,68 +32,69 @@ export default function PointPostPage() {
     }
 
     try {
-      setIsSubmitting(true);
-      setMessage("");
+  setIsSubmitting(true);
+  setMessage("");
 
-      let fileUrl = "";
+  let fileUrl = "";
 
-      if (currentMission.requiresEvidence && file) {
-        setMessage("証拠ファイルをアップロード中...");
+  if (currentMission.requiresEvidence && file) {
+    const fileExt = file.name.split(".").pop()?.toLowerCase();
+    const fileName = `${Date.now()}.${fileExt}`;
 
-        const form = new FormData();
-        form.append("file", file);
+    const { error } = await supabase.storage
+      .from("images")
+      .upload(fileName, file);
 
-        const res = await fetch("/api/upload", {
-          method: "POST",
-          body: form,
-        });
-
-        if (!res.ok) {
-          setMessage("アップロード失敗");
-          setIsSubmitting(false);
-          return;
-        }
-
-        const data = await res.json();
-        fileUrl = data.url;
-      }
-
-      setMessage("ポイント申請中...");
-
-      const postRes = await fetch("/api/point-posts", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          team,
-          missionKey: currentMission.key,
-          missionLabel: currentMission.label,
-          quantity,
-          points: currentMission.requiresQuantity
-            ? currentMission.points * quantity
-            : currentMission.points,
-          imageUrl: fileUrl,
-        }),
-      });
-
-      const postText = await postRes.text();
-
-      if (!postRes.ok) {
-        setMessage("申請失敗: " + postText);
-        setIsSubmitting(false);
-        return;
-      }
-
-      setMessage("申請しました！管理者の承認をお待ちください。");
-      setFile(null);
-      setQuantity(1);
+    if (error) {
+      console.error(error);
+      setMessage("アップロード失敗");
       setIsSubmitting(false);
-    } catch (e) {
-      console.error(e);
-      setMessage("通信エラーが発生しました");
-      setIsSubmitting(false);
+      return;
     }
+
+    const {
+      data: { publicUrl },
+    } = supabase.storage.from("images").getPublicUrl(fileName);
+
+    fileUrl = publicUrl;
+  }
+
+  setMessage("ポイント申請中...");
+
+  const postRes = await fetch("/api/point-posts", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      team,
+      missionKey: currentMission.key,
+      missionLabel: currentMission.label,
+      quantity,
+      points: currentMission.requiresQuantity
+        ? currentMission.points * quantity
+        : currentMission.points,
+      imageUrl: fileUrl,
+    }),
+  });
+
+  if (!postRes.ok) {
+    const text = await postRes.text();
+    setMessage("申請失敗: " + text);
+    setIsSubmitting(false);
+    return;
+  }
+
+  setMessage("申請しました！管理者の承認をお待ちください。");
+  setFile(null);
+  setQuantity(1);
+  setIsSubmitting(false);
+
+} catch (e) {
+  console.error(e);
+  setMessage("通信エラーが発生しました");
+  setIsSubmitting(false);
+}
   };
 
   return (
