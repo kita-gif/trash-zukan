@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { CSSProperties } from "react";
 
 export default function Home() {
@@ -14,25 +15,25 @@ export default function Home() {
       </h1>
 
       <div style={{ display: "grid", gap: 16 }}>
-        <a href="/zukan" style={cardStyle("#22c55e")}>
+        <Link href="/zukan" style={cardStyle("#22c55e")}>
           📘 ゴミ図鑑を見る
-        </a>
+        </Link>
 
-        <a href="/post" style={cardStyle("#3b82f6")}>
+        <Link href="/post" style={cardStyle("#3b82f6")}>
           📸 図鑑にゴミを登録する
-        </a>
+        </Link>
 
-        <a href="/points/post" style={cardStyle("#f97316")}>
+        <Link href="/points/post" style={cardStyle("#f97316")}>
           🏆 ポイント申請
-        </a>
+        </Link>
 
-        <a href="/points/admin" style={cardStyle("#444")}>
+        <Link href="/points/admin" style={cardStyle("#444")}>
           🔐 ポイント管理
-        </a>
+        </Link>
 
-        <a href="/points/ranking" style={cardStyle("#eab308")}>
+        <Link href="/points/ranking" style={cardStyle("#eab308")}>
           📊 総合ランキング
-        </a>
+        </Link>
       </div>
     </main>
   );
@@ -50,5 +51,6 @@ function cardStyle(color: string): CSSProperties {
     background: color,
     textDecoration: "none",
     boxShadow: "0 8px 20px rgba(0,0,0,0.15)",
+    transition: "0.2s",
   };
 }

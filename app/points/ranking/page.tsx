@@ -1,31 +1,20 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
+import { supabase } from "@/lib/supabase";
 
 type PointPost = {
   id: number;
   team: string;
-  missionKey: string;
-  missionLabel: string;
   quantity: number;
-  points: number;
-  imageUrl: string;
-  approved: boolean;
-  rejected?: boolean;
-  createdAt: number;
+  status: string;
 };
 
 type ZukanPost = {
   id: number;
-  name: string;
-  reading: string;
-  approved: boolean;
-  points: number;
-  entries: {
-    team: string;
-    imageUrl: string;
-    createdAt: number;
-  }[];
+  team: string;
+  status: string;
 };
 
 export default function PointRankingPage() {
@@ -33,34 +22,40 @@ export default function PointRankingPage() {
   const [zukanPosts, setZukanPosts] = useState<ZukanPost[]>([]);
 
   useEffect(() => {
-    fetch("/api/point-posts")
-      .then((res) => res.json())
-      .then(setPointPosts);
+    const load = async () => {
+      const { data: pointData } = await supabase
+        .from("point_posts")
+        .select("*");
 
-    fetch("/api/posts")
-      .then((res) => res.json())
-      .then(setZukanPosts);
+      const { data: zukanData } = await supabase
+        .from("posts")
+        .select("*");
+
+      setPointPosts(pointData || []);
+      setZukanPosts(zukanData || []);
+    };
+
+    load();
   }, []);
 
   const ranking = useMemo(() => {
-    const rankingMap: Record<string, number> = {};
+    const map: Record<string, number> = {};
 
+    // 🔥 ポイント申請
     pointPosts
-      .filter((p) => p.approved)
+      .filter((p) => p.status === "approved")
       .forEach((p) => {
-        rankingMap[p.team] = (rankingMap[p.team] || 0) + p.points;
+        map[p.team] = (map[p.team] || 0) + 5; // 仮：1件5pt
       });
 
+    // 🔥 図鑑投稿
     zukanPosts
-      .filter((p) => p.approved)
+      .filter((p) => p.status === "approved")
       .forEach((p) => {
-        const teams = Array.from(new Set(p.entries.map((e) => e.team)));
-        teams.forEach((team) => {
-          rankingMap[team] = (rankingMap[team] || 0) + (p.points || 0);
-        });
+        map[p.team] = (map[p.team] || 0) + 3; // 仮：1件3pt
       });
 
-    return Object.entries(rankingMap)
+    return Object.entries(map)
       .map(([team, total]) => ({ team, total }))
       .sort((a, b) => b.total - a.total);
   }, [pointPosts, zukanPosts]);
@@ -70,7 +65,7 @@ export default function PointRankingPage() {
       <h1>総合ランキング</h1>
 
       <div style={{ marginBottom: 16 }}>
-        <a href="/">← ホームへ戻る</a>
+        <Link href="/">← ホームへ戻る</Link>
       </div>
 
       {ranking.length === 0 ? (
@@ -87,7 +82,6 @@ export default function PointRankingPage() {
                 background: "white",
                 display: "flex",
                 justifyContent: "space-between",
-                alignItems: "center",
               }}
             >
               <strong>

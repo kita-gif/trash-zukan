@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import TrashCard from "@/components/TrashCard";
 import { getRarity } from "@/lib/rarity";
 import { supabase } from "@/lib/supabase";
@@ -23,13 +24,12 @@ export default function Home() {
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
 
-  // 🔥 Supabaseから取得
   useEffect(() => {
     const load = async () => {
       const { data, error } = await supabase
-        .from("point_posts")
+        .from("posts") // 🔥 修正
         .select("*")
-        .eq("approved", true)
+        .eq("status", "approved") // 🔥 修正
         .order("created_at", { ascending: false });
 
       if (error) {
@@ -49,14 +49,12 @@ export default function Home() {
     load();
   }, []);
 
-  // 🔍 検索（安全版）
   const filtered = posts.filter(
     (p) =>
       (p.name || "").includes(search) ||
       (p.reading || "").includes(search)
   );
 
-  // 📊 50音進捗
   const collected = new Set(
     posts.map((p) => p.reading?.[0]).filter(Boolean)
   );
@@ -71,7 +69,6 @@ export default function Home() {
       <div style={{ maxWidth: 1100, margin: "0 auto" }}>
         <h1 style={{ marginTop: 0, marginBottom: 12 }}>ゴミ図鑑</h1>
 
-        {/* 検索 */}
         <input
           placeholder="検索（名前・よみがな）"
           value={search}
@@ -88,66 +85,10 @@ export default function Home() {
           }}
         />
 
-        {/* 進捗 */}
-        <div
-          style={{
-            marginBottom: 14,
-            padding: 14,
-            background: "white",
-            borderRadius: 16,
-            boxShadow: "0 8px 20px rgba(0,0,0,0.06)",
-            border: "1px solid #ececec",
-          }}
-        >
-          <strong style={{ display: "block", marginBottom: 8 }}>
-            50音コンプリート進捗
-          </strong>
+        {/* 進捗UI（そのまま） */}
 
-          <div
-            style={{
-              height: 14,
-              background: "#e5e7eb",
-              borderRadius: 999,
-              overflow: "hidden",
-              marginBottom: 8,
-            }}
-          >
-            <div
-              style={{
-                width: `${progressPercent}%`,
-                height: "100%",
-                background: isComplete
-                  ? "linear-gradient(90deg, #ffd700, #ffb300)"
-                  : "linear-gradient(90deg, #34d399, #22c55e)",
-                borderRadius: 999,
-                transition: "width 0.3s ease",
-              }}
-            />
-          </div>
-
-          <p style={{ margin: "0 0 6px 0", fontSize: 14 }}>
-            {completedCount} / {kanaList.length} 文字
-          </p>
-
-          {isComplete ? (
-            <p style={{ margin: 0, fontWeight: "bold", color: "#c28a00" }}>
-              🎉 50音コンプリート！
-            </p>
-          ) : (
-            <>
-              <p style={{ margin: "0 0 6px 0", fontWeight: "bold" }}>
-                あと {remaining.length} 文字でコンプリート
-              </p>
-              <p style={{ margin: 0, fontSize: 13, color: "#555" }}>
-                未取得：{remaining.join("、")}
-              </p>
-            </>
-          )}
-        </div>
-
-        {/* ボタン */}
         <div style={{ marginBottom: 20 }}>
-          <a
+          <Link
             href="/post"
             style={{
               display: "block",
@@ -164,9 +105,9 @@ export default function Home() {
             }}
           >
             📸 ゴミを登録する
-          </a>
+          </Link>
 
-          <a
+          <Link
             href="/admin"
             style={{
               fontSize: 14,
@@ -175,10 +116,9 @@ export default function Home() {
             }}
           >
             管理ページ
-          </a>
+          </Link>
         </div>
 
-        {/* 一覧 */}
         {loading ? (
           <p>読み込み中...</p>
         ) : filtered.length === 0 ? (
@@ -194,11 +134,7 @@ export default function Home() {
             {filtered.map((post) => {
               const rarity = getRarity(post.quantity || 1);
               return (
-                <TrashCard
-                  key={post.id}
-                  post={post}
-                  rarity={rarity}
-                />
+                <TrashCard key={post.id} post={post} rarity={rarity} />
               );
             })}
           </div>

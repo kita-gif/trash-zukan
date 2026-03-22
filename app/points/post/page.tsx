@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { pointMissions } from "@/lib/pointMissions";
 
@@ -13,9 +14,9 @@ export default function PointPostPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const teams = [
-  ...Array.from({ length: 48 }, (_, i) => `${i + 1}班`),
-  "その他",
-];
+    ...Array.from({ length: 48 }, (_, i) => `${i + 1}班`),
+    "その他",
+  ];
 
   const selectableMissions = pointMissions.filter((m) => !m.adminOnly);
   const currentMission = selectableMissions.find((m) => m.key === missionKey);
@@ -32,69 +33,64 @@ export default function PointPostPage() {
     }
 
     try {
-  setIsSubmitting(true);
-  setMessage("");
+      setIsSubmitting(true);
+      setMessage("");
 
-  let fileUrl = "";
+      let fileUrl = "";
 
-  if (currentMission.requiresEvidence && file) {
-    const fileExt = file.name.split(".").pop()?.toLowerCase();
-    const fileName = `${Date.now()}.${fileExt}`;
+      if (currentMission.requiresEvidence && file) {
+        const fileExt = file.name.split(".").pop()?.toLowerCase();
 
-    const { error } = await supabase.storage
-      .from("images")
-      .upload(fileName, file);
+        // 🔥 一意なファイル名（超重要）
+        const fileName = `${Date.now()}_${Math.random()
+          .toString(36)
+          .slice(2)}.${fileExt}`;
 
-    if (error) {
-      console.error(error);
-      setMessage("アップロード失敗");
+        const { error: uploadError } = await supabase.storage
+          .from("images")
+          .upload(fileName, file);
+
+        if (uploadError) throw uploadError;
+
+        const {
+          data: { publicUrl },
+        } = supabase.storage.from("images").getPublicUrl(fileName);
+
+        fileUrl = publicUrl;
+      }
+
+      setMessage("ポイント申請中...");
+
+      const { error: insertError } = await supabase
+        .from("point_posts")
+        .insert([
+          {
+            team,
+            mission_key: currentMission.key,
+            quantity,
+            image_url: fileUrl,
+            status: "pending", // 🔥 追加（超重要）
+          },
+        ]);
+
+      if (insertError) throw insertError;
+
+      setMessage("申請しました！管理者の承認をお待ちください。");
+
+      setFile(null);
+      setQuantity(1);
+    } catch (e: any) {
+      console.error(e);
+      setMessage("エラー: " + e.message);
+    } finally {
       setIsSubmitting(false);
-      return;
     }
-
-    const {
-      data: { publicUrl },
-    } = supabase.storage.from("images").getPublicUrl(fileName);
-
-    fileUrl = publicUrl;
-  }
-
-  setMessage("ポイント申請中...");
-
-  const { error: insertError } = await supabase
-  .from("point_posts")
-  .insert([
-    {
-      team,
-      mission_key: currentMission.key,
-      quantity,
-      image_url: fileUrl,
-    },
-  ]);
-
-if (insertError) {
-  console.error(insertError);
-  setMessage("保存失敗: " + insertError.message);
-  setIsSubmitting(false);
-  return;
-}
-
-  setMessage("申請しました！管理者の承認をお待ちください。");
-  setFile(null);
-  setQuantity(1);
-  setIsSubmitting(false);
-
-} catch (e) {
-  console.error(e);
-  setMessage("通信エラーが発生しました");
-  setIsSubmitting(false);
-}
   };
 
   return (
     <main style={{ padding: 20, maxWidth: 560, margin: "0 auto" }}>
       <div style={{ marginBottom: 16 }}>
-        <a href="/">← ホームへ戻る</a>
+        <Link href="/">← ホームへ戻る</Link>
       </div>
 
       <h1>ポイント申請</h1>

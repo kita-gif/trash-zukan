@@ -8,39 +8,73 @@ export default function PostPage() {
   const [reading, setReading] = useState("");
   const [team, setTeam] = useState("1班");
   const [file, setFile] = useState<File | null>(null);
+  const [loading, setLoading] = useState(false);
 
   const teams = [
-  ...Array.from({ length: 48 }, (_, i) => `${i + 1}班`),
-  "その他",
-];
+    ...Array.from({ length: 48 }, (_, i) => `${i + 1}班`),
+    "その他",
+  ];
 
-  // 🔥 登録処理
   const handleSubmit = async () => {
-  if (!file) {
-    alert("画像を選択してください");
-    return;
-  }
+    if (!file || !name || !reading) {
+      alert("すべて入力してください");
+      return;
+    }
 
-  const fileName = `${Date.now()}.jpg`;
+    setLoading(true);
 
-  const { error } = await supabase.storage
-    .from("images")
-    .upload(fileName, file);
+    try {
+      // ① ファイル名生成
+      const fileName = `${Date.now()}_${file.name}`;
 
-  if (error) {
-    console.error(error);
-alert(JSON.stringify(error));
-    return;
-  }
+      // ② Storageにアップロード
+      const { error: uploadError } = await supabase.storage
+        .from("images")
+        .upload(fileName, file);
 
-  alert("アップロード成功！");
-};
+      if (uploadError) throw uploadError;
+
+      // ③ 公開URL取得
+      const { data } = supabase.storage
+        .from("images")
+        .getPublicUrl(fileName);
+
+      const imageUrl = data.publicUrl;
+
+      // ④ DBに保存（←これが超重要）
+      const { error: insertError } = await supabase
+        .from("posts")
+        .insert([
+          {
+            name,
+            reading,
+            team,
+            image_url: imageUrl,
+            status: "pending", // ← 承認フロー用
+          },
+        ]);
+
+      if (insertError) throw insertError;
+
+      alert("登録完了！");
+
+      // リセット
+      setName("");
+      setReading("");
+      setTeam("1班");
+      setFile(null);
+    } catch (err: any) {
+      console.error(err);
+      alert("エラー: " + err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div style={{ padding: 20 }}>
       <h1>ゴミを登録</h1>
 
-      {/* 名前 */}
       <input
         placeholder="名前"
         value={name}
@@ -48,7 +82,6 @@ alert(JSON.stringify(error));
         style={{ display: "block", marginBottom: 10, padding: 8 }}
       />
 
-      {/* よみがな */}
       <input
         placeholder="よみがな（ひらがな）"
         value={reading}
@@ -56,7 +89,6 @@ alert(JSON.stringify(error));
         style={{ display: "block", marginBottom: 10, padding: 8 }}
       />
 
-      {/* 班 */}
       <select
         value={team}
         onChange={(e) => setTeam(e.target.value)}
@@ -67,17 +99,17 @@ alert(JSON.stringify(error));
         ))}
       </select>
 
-      {/* ファイル */}
       <input
-      type="file"
-      accept="image/*"
-      capture="environment"
-      onChange={(e) => setFile(e.target.files?.[0] || null)}
-/>
+        type="file"
+        accept="image/*"
+        capture="environment"
+        onChange={(e) => setFile(e.target.files?.[0] || null)}
+        style={{ marginBottom: 10 }}
+      />
 
-      {/* 🔥 登録ボタン */}
       <button
         onClick={handleSubmit}
+        disabled={loading}
         style={{
           marginTop: 20,
           padding: "12px 16px",
@@ -87,12 +119,14 @@ alert(JSON.stringify(error));
           borderRadius: 10,
           fontWeight: "bold",
           cursor: "pointer",
+          opacity: loading ? 0.6 : 1,
         }}
       >
-        登録する
+        {loading ? "登録中..." : "登録する"}
       </button>
 
-      {/* 確認表示 */}
+      <hr style={{ margin: "20px 0" }} />
+
       <p>名前: {name}</p>
       <p>よみがな: {reading}</p>
       <p>班: {team}</p>
@@ -100,4 +134,3 @@ alert(JSON.stringify(error));
     </div>
   );
 }
-
