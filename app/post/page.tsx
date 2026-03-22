@@ -9,7 +9,10 @@ export default function PostPage() {
   const [team, setTeam] = useState("1班");
   const [file, setFile] = useState<File | null>(null);
 
-  const teams = ["1班", "2班", "3班"];
+  const teams = [
+  ...Array.from({ length: 48 }, (_, i) => `${i + 1}班`),
+  "その他",
+];
 
   // 🔥 登録処理
   const handleSubmit = async () => {
@@ -66,10 +69,11 @@ alert(JSON.stringify(error));
 
       {/* ファイル */}
       <input
-        type="file"
-        onChange={(e) => setFile(e.target.files?.[0] || null)}
-        style={{ display: "block", marginBottom: 10 }}
-      />
+      type="file"
+      accept="image/*"
+      capture="environment"
+      onChange={(e) => setFile(e.target.files?.[0] || null)}
+/>
 
       {/* 🔥 登録ボタン */}
       <button
