@@ -18,9 +18,12 @@ export default function PointRankingPage() {
 
   useEffect(() => {
     const load = async () => {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from("point_posts")
         .select("*");
+
+      console.log("🔥 pointPosts:", data);
+      console.error("🔥 error:", error);
 
       setPointPosts(data || []);
     };
@@ -50,13 +53,19 @@ export default function PointRankingPage() {
     <main style={{ padding: 20 }}>
       <h1>総合ランキング</h1>
 
-      <Link href="/">← ホーム</Link>
+      <div style={{ marginBottom: 16 }}>
+        <Link href="/">← ホーム</Link>
+      </div>
 
-      {ranking.map((r, i) => (
-        <div key={r.team}>
-          {i + 1}位 {r.team} {r.total}pt
-        </div>
-      ))}
+      {ranking.length === 0 ? (
+        <p>まだポイントがありません</p>
+      ) : (
+        ranking.map((r, i) => (
+          <div key={r.team}>
+            {i + 1}位 {r.team} {r.total}pt
+          </div>
+        ))
+      )}
     </main>
   );
 }
