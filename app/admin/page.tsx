@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { supabase } from "@/lib/supabase";
 
 const PASSWORD = "ivusa";
 
@@ -38,9 +39,17 @@ export default function AdminPage() {
   }, []);
 
   const loadPosts = async () => {
-    const res = await fetch("/api/posts");
-    const data = await res.json();
-    setPosts(data);
+    const { data, error } = await supabase
+  .from("point_posts")
+  .select("*")
+  .order("created_at", { ascending: false });
+
+if (error) {
+  console.error(error);
+  return;
+}
+
+setPosts(data);
   };
 
   useEffect(() => {
@@ -65,22 +74,22 @@ export default function AdminPage() {
   };
 
   const approvePost = async (id: number) => {
-    const res = await fetch("/api/posts", {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ id }),
-    });
+    const { error } = await supabase
+  .from("point_posts")
+  .update({
+    approved: true,
+    points: 5, // 必要なら計算
+  })
+  .eq("id", id);
 
-    if (!res.ok) {
-      alert("承認に失敗しました");
-      return;
-    }
+if (error) {
+  alert("承認に失敗しました");
+  console.error(error);
+  return;
+}
 
-    await loadPosts();
-    alert("承認しました（5ポイント付与）");
-  };
+await loadPosts();
+alert("承認しました！");
 
   if (!isAuthed) {
     return (
@@ -124,6 +133,7 @@ export default function AdminPage() {
       </main>
     );
   }
+}
 
   const pendingPosts = posts.filter((post) => !post.approved);
   const approvedPosts = posts.filter((post) => post.approved);
