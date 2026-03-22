@@ -11,29 +11,24 @@ export default function ZukanPage() {
   useEffect(() => {
     const load = async () => {
       const { data, error } = await supabase
-  .from("point_posts")
-  .select("*")
-  .eq("approved", true);
+        .from("posts") // 🔥 修正
+        .select("*")
+        .eq("approved", true);
 
-if (error) {
-  console.error(error);
-  setLoading(false);
-  return;
-}
+      if (error) {
+        console.error(error);
+        setLoading(false);
+        return;
+      }
 
-const sorted = (data || []).sort((a: any, b: any) =>
-  (a.reading || "").localeCompare(b.reading || "", "ja")
-);
+      const sorted = (data || []).sort((a: any, b: any) =>
+        (a.reading || "").localeCompare(b.reading || "", "ja")
+      );
 
-setPosts(sorted);
-setLoading(false);
-
+      setPosts(sorted); // 🔥 1回だけ
+      setLoading(false);
 
       console.log("🔥 posts:", data);
-      console.error("🔥 error:", error);
-
-      setPosts(data || []);
-      setLoading(false);
     };
 
     load();
@@ -78,7 +73,6 @@ setLoading(false);
                 background: "white",
               }}
             >
-              {/* 🔥 ここが最重要 */}
               <img
                 src={post.image_url}
                 alt={post.name}

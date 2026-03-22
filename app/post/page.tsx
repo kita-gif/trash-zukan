@@ -54,7 +54,7 @@ const fileName = `${Date.now()}_${Math.random()
             reading,
             team,
             image_url: imageUrl,
-            status: "pending", // ← 承認フロー用
+            approved: false, // ← 承認フロー用
           },
         ]);
 
