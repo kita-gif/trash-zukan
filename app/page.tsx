@@ -27,9 +27,9 @@ export default function Home() {
           🏆 ポイント申請
         </Link>
 
-        <Link href="/points/admin" style={cardStyle("#444")}>
-          🔐 ポイント管理
-        </Link>
+       <Link href="/admin" style={cardStyle("#444")}>
+  🔐 管理画面
+</Link>
 
         <Link href="/points/ranking" style={cardStyle("#eab308")}>
           📊 総合ランキング
