@@ -4,42 +4,53 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 
-console.log("URL:", process.env.NEXT_PUBLIC_SUPABASE_URL);
-
 const PASSWORD = "ivusa";
 
 type Post = {
-  id: number;
-  name: string;
-  reading: string;
+  id: string;
   team: string;
   image_url: string;
-  status: string;
+  approved: boolean;
+  quantity: number;
+  created_at: string;
 };
 
 export default function AdminPage() {
   const [input, setInput] = useState("");
   const [isAuthed, setIsAuthed] = useState(false);
   const [posts, setPosts] = useState<Post[]>([]);
+  const [loading, setLoading] = useState(true);
 
+  // 🔐 ログイン状態保持
   useEffect(() => {
     const saved = sessionStorage.getItem("admin_auth");
     if (saved === "true") setIsAuthed(true);
   }, []);
 
+  // 📦 データ取得（Supabase）
   const loadPosts = async () => {
-    const { data } = await supabase
-      .from("posts")
+    setLoading(true);
+
+    const { data, error } = await supabase
+      .from("point_posts")
       .select("*")
       .order("created_at", { ascending: false });
 
+    if (error) {
+      console.error(error);
+      setLoading(false);
+      return;
+    }
+
     setPosts(data || []);
+    setLoading(false);
   };
 
   useEffect(() => {
     if (isAuthed) loadPosts();
   }, [isAuthed]);
 
+  // 🔑 ログイン処理
   const handleLogin = () => {
     if (input === PASSWORD) {
       sessionStorage.setItem("admin_auth", "true");
@@ -55,69 +66,174 @@ export default function AdminPage() {
     setInput("");
   };
 
-  // 🔥 承認 + ポイント付与
+  // ✅ 承認処理
   const approvePost = async (post: Post) => {
-    // ① 図鑑承認
     const { error } = await supabase
-      .from("posts")
-      .update({ status: "approved" })
+      .from("point_posts")
+      .update({ approved: true })
       .eq("id", post.id);
 
     if (error) {
+      console.error(error);
       alert("承認失敗");
       return;
     }
 
-    // ② ポイント追加（ここが超重要）
-    await supabase.from("point_posts").insert([
-      {
-        team: post.team,
-        mission_key: "zukan",
-        quantity: 1,
-        status: "approved",
-      },
-    ]);
-
-    alert("承認＆5pt付与！");
+    alert("承認しました！");
     await loadPosts();
   };
 
+  // 🔍 未承認だけ抽出
+  const pending = posts.filter((p) => !p.approved);
+  const approved = posts.filter((p) => p.approved);
+
+  // 🔐 ログイン画面
   if (!isAuthed) {
     return (
-      <main style={{ padding: 20 }}>
+      <main style={{ padding: 20, maxWidth: 400, margin: "0 auto" }}>
         <h1>管理者ログイン</h1>
 
         <input
           type="password"
+          placeholder="パスワード"
           value={input}
           onChange={(e) => setInput(e.target.value)}
+          style={{
+            width: "100%",
+            padding: 12,
+            marginBottom: 12,
+            borderRadius: 10,
+            border: "1px solid #ccc",
+          }}
         />
 
-        <button onClick={handleLogin}>ログイン</button>
+        <button
+          onClick={handleLogin}
+          style={{
+            width: "100%",
+            padding: 12,
+            background: "#222",
+            color: "white",
+            border: "none",
+            borderRadius: 10,
+            fontWeight: "bold",
+          }}
+        >
+          ログイン
+        </button>
       </main>
     );
   }
 
-  const pending = posts.filter((p) => p.status !== "approved");
-
   return (
-    <main style={{ padding: 20 }}>
-      <h1>図鑑管理</h1>
+    <main style={{ padding: 16, maxWidth: 800, margin: "0 auto" }}>
+      {/* ヘッダー */}
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          marginBottom: 20,
+        }}
+      >
+        <h1>管理画面</h1>
 
-      <Link href="/">← ホーム</Link>
+        <button
+          onClick={handleLogout}
+          style={{
+            padding: "8px 12px",
+            background: "#666",
+            color: "white",
+            border: "none",
+            borderRadius: 8,
+          }}
+        >
+          ログアウト
+        </button>
+      </div>
 
-      <h2>未承認</h2>
+      <Link href="/">← ホームへ戻る</Link>
 
-      {pending.map((post) => (
-        <div key={post.id} style={{ marginBottom: 20 }}>
-          <img src={post.image_url} style={{ width: 200 }} />
-          <p>{post.name}</p>
+      {/* 未承認 */}
+      <h2 style={{ marginTop: 20 }}>未承認</h2>
 
-          <button onClick={() => approvePost(post)}>
-            承認（+5pt）
-          </button>
+      {loading ? (
+        <p>読み込み中...</p>
+      ) : pending.length === 0 ? (
+        <p>未承認はありません</p>
+      ) : (
+        <div style={{ display: "grid", gap: 16 }}>
+          {pending.map((post) => (
+            <div
+              key={post.id}
+              style={{
+                border: "1px solid #ddd",
+                borderRadius: 12,
+                padding: 12,
+                background: "white",
+              }}
+            >
+              <img
+                src={post.image_url}
+                style={{
+                  width: "100%",
+                  borderRadius: 8,
+                  marginBottom: 8,
+                }}
+              />
+
+              <p>班：{post.team}</p>
+
+              <button
+                onClick={() => approvePost(post)}
+                style={{
+                  width: "100%",
+                  padding: 12,
+                  background: "green",
+                  color: "white",
+                  border: "none",
+                  borderRadius: 10,
+                  fontWeight: "bold",
+                }}
+              >
+                承認する
+              </button>
+            </div>
+          ))}
         </div>
-      ))}
+      )}
+
+      {/* 承認済み */}
+      <h2 style={{ marginTop: 30 }}>承認済み</h2>
+
+      {approved.length === 0 ? (
+        <p>まだありません</p>
+      ) : (
+        <div style={{ display: "grid", gap: 16 }}>
+          {approved.map((post) => (
+            <div
+              key={post.id}
+              style={{
+                border: "1px solid #ddd",
+                borderRadius: 12,
+                padding: 12,
+                background: "#f9fafb",
+              }}
+            >
+              <img
+                src={post.image_url}
+                style={{
+                  width: "100%",
+                  borderRadius: 8,
+                  marginBottom: 8,
+                }}
+              />
+
+              <p>班：{post.team}</p>
+              <p style={{ color: "green", fontWeight: "bold" }}>承認済み</p>
+            </div>
+          ))}
+        </div>
+      )}
     </main>
   );
 }

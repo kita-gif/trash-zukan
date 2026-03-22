@@ -11,10 +11,23 @@ export default function ZukanPage() {
   useEffect(() => {
     const load = async () => {
       const { data, error } = await supabase
-        .from("posts")
-        .select("*")
-        .eq("status", "approved")
-        .order("created_at", { ascending: false });
+  .from("point_posts")
+  .select("*")
+  .eq("approved", true);
+
+if (error) {
+  console.error(error);
+  setLoading(false);
+  return;
+}
+
+const sorted = (data || []).sort((a: any, b: any) =>
+  (a.reading || "").localeCompare(b.reading || "", "ja")
+);
+
+setPosts(sorted);
+setLoading(false);
+
 
       console.log("🔥 posts:", data);
       console.error("🔥 error:", error);
