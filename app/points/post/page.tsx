@@ -61,30 +61,23 @@ export default function PointPostPage() {
 
   setMessage("ポイント申請中...");
 
-  const postRes = await fetch("/api/point-posts", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
+  const { error: insertError } = await supabase
+  .from("point_posts")
+  .insert([
+    {
       team,
-      missionKey: currentMission.key,
-      missionLabel: currentMission.label,
+      mission_key: currentMission.key,
       quantity,
-      points: currentMission.requiresQuantity
-        ? currentMission.points * quantity
-        : currentMission.points,
-      imageUrl: fileUrl,
-    }),
-  });
+      image_url: fileUrl,
+    },
+  ]);
 
-  if (!postRes.ok) {
-  const text = await postRes.text();
-  console.error(text);
-  setMessage("申請失敗: " + text);
-    setIsSubmitting(false);
-    return;
-  }
+if (insertError) {
+  console.error(insertError);
+  setMessage("保存失敗: " + insertError.message);
+  setIsSubmitting(false);
+  return;
+}
 
   setMessage("申請しました！管理者の承認をお待ちください。");
   setFile(null);
