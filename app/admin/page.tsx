@@ -5,21 +5,6 @@ export const dynamic = "force-dynamic";
 import { useEffect, useState } from "react";
 import { getSupabase } from "@/lib/supabase";
 
-const load = async () => {
-  const supabase = getSupabase();
-
-  const { data: postsData } = await supabase
-    .from("posts")
-    .select("*");
-};
-const loadPosts = async () => {
-  if (!supabase) return; // 念のため
-
-  const { data } = await supabase.from("posts").select("*");
-};
-
-console.log("supabase:", supabase);
-
 type Post = {
   id: string;
   name: string;
@@ -44,6 +29,7 @@ export default function AdminPage() {
 
   const load = async () => {
     setLoading(true);
+    const supabase = getSupabase();
 
     const { data: postsData } = await supabase
       .from("posts")
@@ -64,14 +50,14 @@ export default function AdminPage() {
     load();
   }, []);
 
-  // 🔥 承認（図鑑）
   const approvePost = async (id: string) => {
+    const supabase = getSupabase();
     await supabase.from("posts").update({ approved: true }).eq("id", id);
     load();
   };
 
-  // 🔥 承認（ポイント）
   const approvePoint = async (id: string) => {
+    const supabase = getSupabase();
     await supabase.from("point_posts").update({ approved: true }).eq("id", id);
     load();
   };
@@ -88,7 +74,6 @@ export default function AdminPage() {
 
       {loading && <p>読み込み中...</p>}
 
-      {/* 📸 図鑑 未承認 */}
       <h2>未承認（図鑑）</h2>
       {pendingPosts.map((p) => (
         <div key={p.id}>
@@ -98,7 +83,6 @@ export default function AdminPage() {
         </div>
       ))}
 
-      {/* 🏆 ポイント 未承認 */}
       <h2>未承認（ポイント）</h2>
       {pendingPoints.map((p) => (
         <div key={p.id}>
@@ -108,7 +92,6 @@ export default function AdminPage() {
         </div>
       ))}
 
-      {/* 📸 図鑑 承認済み */}
       <h2>承認済み（図鑑）</h2>
       {approvedPosts.map((p) => (
         <div key={p.id}>
@@ -117,7 +100,6 @@ export default function AdminPage() {
         </div>
       ))}
 
-      {/* 🏆 ポイント 承認済み */}
       <h2>承認済み（ポイント）</h2>
       {approvedPoints.map((p) => (
         <div key={p.id}>
