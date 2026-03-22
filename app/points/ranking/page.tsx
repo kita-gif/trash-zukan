@@ -59,7 +59,7 @@ export default function PointRankingPage() {
     zukanPosts
       .filter((p) => p.approved)
       .forEach((p) => {
-        map[p.team] = (map[p.team] || 0) + 3; // ←図鑑は3pt
+        map[p.team] = (map[p.team] || 0) + 5; // ←図鑑は5pt
       });
 
     return Object.entries(map)
