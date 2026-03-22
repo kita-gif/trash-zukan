@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import TrashCard from "@/components/TrashCard";
 import { getRarity } from "@/lib/rarity";
+import { supabase } from "@/lib/supabase";
 
 const kanaList = [
   "あ","い","う","え","お",
@@ -20,27 +21,44 @@ const kanaList = [
 export default function Home() {
   const [posts, setPosts] = useState<any[]>([]);
   const [search, setSearch] = useState("");
+  const [loading, setLoading] = useState(true);
 
+  // 🔥 Supabaseから取得
   useEffect(() => {
-    fetch("/api/posts")
-      .then((res) => res.json())
-      .then((data) => {
-        const approved = data.filter((p: any) => p.approved);
-        const sorted = approved.sort((a: any, b: any) =>
-          a.reading.localeCompare(b.reading, "ja")
-        );
-        setPosts(sorted);
-      });
+    const load = async () => {
+      const { data, error } = await supabase
+        .from("point_posts")
+        .select("*")
+        .eq("approved", true)
+        .order("created_at", { ascending: false });
+
+      if (error) {
+        console.error(error);
+        setLoading(false);
+        return;
+      }
+
+      const sorted = (data || []).sort((a: any, b: any) =>
+        (a.reading || "").localeCompare(b.reading || "", "ja")
+      );
+
+      setPosts(sorted);
+      setLoading(false);
+    };
+
+    load();
   }, []);
 
+  // 🔍 検索（安全版）
   const filtered = posts.filter(
-    (p) => p.name.includes(search) || p.reading.includes(search)
+    (p) =>
+      (p.name || "").includes(search) ||
+      (p.reading || "").includes(search)
   );
 
+  // 📊 50音進捗
   const collected = new Set(
-    posts
-      .map((p) => p.reading?.[0])
-      .filter(Boolean)
+    posts.map((p) => p.reading?.[0]).filter(Boolean)
   );
 
   const completedCount = kanaList.filter((k) => collected.has(k)).length;
@@ -53,6 +71,7 @@ export default function Home() {
       <div style={{ maxWidth: 1100, margin: "0 auto" }}>
         <h1 style={{ marginTop: 0, marginBottom: 12 }}>ゴミ図鑑</h1>
 
+        {/* 検索 */}
         <input
           placeholder="検索（名前・よみがな）"
           value={search}
@@ -69,6 +88,7 @@ export default function Home() {
           }}
         />
 
+        {/* 進捗 */}
         <div
           style={{
             marginBottom: 14,
@@ -125,53 +145,61 @@ export default function Home() {
           )}
         </div>
 
+        {/* ボタン */}
         <div style={{ marginBottom: 20 }}>
-  <a
-    href="/post"
-    style={{
-      display: "block",
-      textAlign: "center",
-      padding: "18px",
-      fontSize: 20,
-      fontWeight: "bold",
-      color: "white",
-      background: "linear-gradient(135deg, #ff6a00, #ffb703)",
-      borderRadius: 18,
-      textDecoration: "none",
-      boxShadow: "0 12px 28px rgba(255, 122, 0, 0.35)",
-      marginBottom: 10,
-      letterSpacing: "0.04em",
-    }}
-  >
-    📸 ゴミを登録する
-  </a>
+          <a
+            href="/post"
+            style={{
+              display: "block",
+              textAlign: "center",
+              padding: "18px",
+              fontSize: 20,
+              fontWeight: "bold",
+              color: "white",
+              background: "linear-gradient(135deg, #ff6a00, #ffb703)",
+              borderRadius: 18,
+              textDecoration: "none",
+              boxShadow: "0 12px 28px rgba(255, 122, 0, 0.35)",
+              marginBottom: 10,
+            }}
+          >
+            📸 ゴミを登録する
+          </a>
 
-  <a
-    href="/admin"
-    style={{
-      display: "inline-block",
-      fontSize: 14,
-      color: "#666",
-      textDecoration: "none",
-    }}
-  >
-    管理ページ
-  </a>
-</div>
+          <a
+            href="/admin"
+            style={{
+              fontSize: 14,
+              color: "#666",
+              textDecoration: "none",
+            }}
+          >
+            管理ページ
+          </a>
+        </div>
 
-        {filtered.length === 0 ? (
+        {/* 一覧 */}
+        {loading ? (
+          <p>読み込み中...</p>
+        ) : filtered.length === 0 ? (
           <p>該当するゴミがありません。</p>
         ) : (
           <div
             style={{
               display: "grid",
-              gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))",
+              gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))",
               gap: 14,
             }}
           >
             {filtered.map((post) => {
-              const rarity = getRarity(post.entries.length);
-              return <TrashCard key={post.id} post={post} rarity={rarity} />;
+              const rarity = getRarity(post.quantity || 1);
+              return (
+                <TrashCard
+                  key={post.id}
+                  post={post}
+                  rarity={rarity}
+                />
+              );
             })}
           </div>
         )}
