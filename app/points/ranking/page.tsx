@@ -41,18 +41,18 @@ export default function PointRankingPage() {
   const ranking = useMemo(() => {
     const map: Record<string, number> = {};
 
-    // 🔥 ポイント申請
+    // 🔥 ポイント申請（仮：1件5pt）
     pointPosts
       .filter((p) => p.status === "approved")
       .forEach((p) => {
-        map[p.team] = (map[p.team] || 0) + 5; // 仮：1件5pt
+        map[p.team] = (map[p.team] || 0) + 5;
       });
 
-    // 🔥 図鑑投稿
+    // 🔥 図鑑投稿（修正：5ptに統一）
     zukanPosts
       .filter((p) => p.status === "approved")
       .forEach((p) => {
-        map[p.team] = (map[p.team] || 0) + 3; // 仮：1件3pt
+        map[p.team] = (map[p.team] || 0) + 5;
       });
 
     return Object.entries(map)

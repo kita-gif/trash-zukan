@@ -31,6 +31,10 @@ export default function Home() {
   🔐 管理画面
 </Link>
 
+<Link href="/points/admin" style={cardStyle("#444")}>
+  🏆 ポイント管理
+</Link>
+
         <Link href="/points/ranking" style={cardStyle("#eab308")}>
           📊 総合ランキング
         </Link>
