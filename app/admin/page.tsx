@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 
+console.log("URL:", process.env.NEXT_PUBLIC_SUPABASE_URL);
+
 const PASSWORD = "ivusa";
 
 type Post = {

@@ -5,6 +5,8 @@ import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { getMissionByKey } from "@/lib/pointMissions";
 
+console.log("URL:", process.env.NEXT_PUBLIC_SUPABASE_URL);
+
 type PointPost = {
   id: number;
   team: string;
