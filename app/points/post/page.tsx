@@ -79,8 +79,9 @@ export default function PointPostPage() {
   });
 
   if (!postRes.ok) {
-    const text = await postRes.text();
-    setMessage("申請失敗: " + text);
+  const text = await postRes.text();
+  console.error(text);
+  setMessage("申請失敗: " + text);
     setIsSubmitting(false);
     return;
   }
