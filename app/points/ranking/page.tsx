@@ -13,20 +13,29 @@ type PointPost = {
   approved: boolean;
 };
 
+type ZukanPost = {
+  id: number;
+  team: string;
+  approved: boolean;
+};
+
 export default function PointRankingPage() {
   const [pointPosts, setPointPosts] = useState<PointPost[]>([]);
+  const [zukanPosts, setZukanPosts] = useState<ZukanPost[]>([]);
 
   // 🔥 データ取得
   useEffect(() => {
     const load = async () => {
-      const { data, error } = await supabase
+      const { data: pointData } = await supabase
         .from("point_posts")
         .select("*");
 
-      console.log("🔥 pointPosts:", data);
-      console.error("🔥 error:", error);
+      const { data: zukanData } = await supabase
+        .from("posts")
+        .select("*");
 
-      setPointPosts(data || []);
+      setPointPosts(pointData || []);
+      setZukanPosts(zukanData || []);
     };
 
     load();
@@ -36,23 +45,27 @@ export default function PointRankingPage() {
   const ranking = useMemo(() => {
     const map: Record<string, number> = {};
 
+    // 🏆 ポイント申請
     pointPosts
       .filter((p) => p.approved)
       .forEach((p) => {
         const mission = getMissionByKey(p.mission_key);
-
-        // 🔥 デバッグ（ここが重要）
-        console.log("🔥 mission:", p.mission_key, mission);
-
         const points = (mission?.points ?? 0) * (p.quantity || 1);
 
         map[p.team] = (map[p.team] || 0) + points;
       });
 
+    // 📘 図鑑投稿（追加！！）
+    zukanPosts
+      .filter((p) => p.approved)
+      .forEach((p) => {
+        map[p.team] = (map[p.team] || 0) + 3; // ←図鑑は3pt
+      });
+
     return Object.entries(map)
       .map(([team, total]) => ({ team, total }))
       .sort((a, b) => b.total - a.total);
-  }, [pointPosts]);
+  }, [pointPosts, zukanPosts]);
 
   return (
     <main style={{ padding: 20, maxWidth: 700, margin: "0 auto" }}>
