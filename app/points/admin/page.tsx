@@ -13,14 +13,14 @@ type PointPost = {
   mission_key: string;
   quantity: number;
   image_url: string;
-  status: string;
+  approved: boolean;
   created_at: string;
 };
 
 type ZukanPost = {
   id: number;
   team: string;
-  status: string;
+  approved: boolean;
 };
 
 export default function PointAdminPage() {
@@ -70,7 +70,7 @@ export default function PointAdminPage() {
   const approve = async (id: number) => {
     await supabase
       .from("point_posts")
-      .update({ status: "approved" })
+      .update({ approved: "approved" })
       .eq("id", id);
 
     await loadAll();
@@ -79,14 +79,14 @@ export default function PointAdminPage() {
   const reject = async (id: number) => {
     await supabase
       .from("point_posts")
-      .update({ status: "rejected" })
+      .update({ approved: "rejected" })
       .eq("id", id);
 
     await loadAll();
   };
 
-  const pending = pointPosts.filter((p) => p.status === "pending");
-  const approved = pointPosts.filter((p) => p.status === "approved");
+  const pending = pointPosts.filter((p) => !p.approved);
+  const approved = pointPosts.filter((p) => p.approved);
 
   const ranking = useMemo(() => {
     const map: Record<string, number> = {};
@@ -96,7 +96,7 @@ export default function PointAdminPage() {
     });
 
     zukanPosts
-      .filter((p) => p.status === "approved")
+      .filter((p) => p.approved)
       .forEach((p) => {
         map[p.team] = (map[p.team] || 0) + 3; // 図鑑ポイント
       });
