@@ -3,6 +3,16 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 
+const loadPosts = async () => {
+  if (!supabase) return; // 念のため
+
+  const { data } = await supabase.from("posts").select("*");
+};
+
+console.log("supabase:", supabase);
+
+export const dynamic = "force-dynamic";
+
 type Post = {
   id: string;
   name: string;
