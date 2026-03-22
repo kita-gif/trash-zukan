@@ -25,7 +25,11 @@ export default function PostPage() {
 
     try {
       // ① ファイル名生成
-      const fileName = `${Date.now()}_${file.name}`;
+      const fileExt = file.name.split(".").pop()?.toLowerCase() || "jpg";
+
+const fileName = `${Date.now()}_${Math.random()
+  .toString(36)
+  .slice(2)}.${fileExt}`;
 
       // ② Storageにアップロード
       const { error: uploadError } = await supabase.storage

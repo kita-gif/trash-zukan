@@ -39,12 +39,13 @@ export default function PointPostPage() {
       let fileUrl = "";
 
       if (currentMission.requiresEvidence && file) {
+        
         const fileExt = file.name.split(".").pop()?.toLowerCase();
 
-        // 🔥 一意なファイル名（超重要）
-        const fileName = `${Date.now()}_${Math.random()
-          .toString(36)
-          .slice(2)}.${fileExt}`;
+// 🔥 日本語除去＆安全なファイル名
+const fileName = `${Date.now()}_${Math.random()
+  .toString(36)
+  .slice(2)}.${fileExt}`;
 
         const { error: uploadError } = await supabase.storage
           .from("images")
