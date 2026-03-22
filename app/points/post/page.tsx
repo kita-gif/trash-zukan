@@ -70,7 +70,7 @@ const fileName = `${Date.now()}_${Math.random()
             mission_key: currentMission.key,
             quantity,
             image_url: fileUrl,
-            status: "pending", // 🔥 追加（超重要）
+            approved: false, // 🔥 追加（超重要）
           },
         ]);
 

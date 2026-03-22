@@ -1,15 +1,5 @@
 export const pointMissions = [
-  {
-    key: "hirano",
-    label: "平野と写真",
-    points: 20,
-    requiresQuantity: false,
-    requiresEvidence: true,
-    evidenceType: "image",
-    adminOnly: false,
-    description: "平野との写真を撮る!!",
-    exampleUrl: "/examples/hirano.jpg",
-  },
+
   {
     key: "tokuriki",
     label: "徳力と写真",
@@ -24,7 +14,7 @@ export const pointMissions = [
   {
     key: "matsui",
     label: "松井と写真",
-    points: 10,
+    points: 20,
     requiresQuantity: false,
     requiresEvidence: true,
     evidenceType: "image",
