@@ -25,8 +25,8 @@ export default function PostPage() {
     .upload(fileName, file);
 
   if (error) {
-    alert("アップロード失敗");
     console.error(error);
+alert(JSON.stringify(error));
     return;
   }
 
@@ -97,5 +97,3 @@ export default function PostPage() {
   );
 }
 
-console.error(error);
-alert(JSON.stringify(error));
