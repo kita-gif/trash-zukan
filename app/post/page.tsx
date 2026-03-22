@@ -18,7 +18,7 @@ export default function PostPage() {
     return;
   }
 
-  const fileName = `${Date.now()}_${file.name}`;
+  const fileName = `${Date.now()}.jpg`;
 
   const { error } = await supabase.storage
     .from("images")
