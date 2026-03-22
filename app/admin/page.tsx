@@ -3,8 +3,15 @@ export const dynamic = "force-dynamic";
 "use client";
 
 import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabase";
+import { getSupabase } from "@/lib/supabase";
 
+const load = async () => {
+  const supabase = getSupabase();
+
+  const { data: postsData } = await supabase
+    .from("posts")
+    .select("*");
+};
 const loadPosts = async () => {
   if (!supabase) return; // 念のため
 
