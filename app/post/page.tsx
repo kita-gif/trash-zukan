@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { supabase } from "@/lib/supabase";
 
 export default function PostPage() {
   const [name, setName] = useState("");
@@ -12,20 +13,25 @@ export default function PostPage() {
 
   // 🔥 登録処理
   const handleSubmit = async () => {
-    if (!file) {
-      alert("画像を選択してください");
-      return;
-    }
+  if (!file) {
+    alert("画像を選択してください");
+    return;
+  }
 
-    console.log("送信データ", {
-      name,
-      reading,
-      team,
-      file,
-    });
+  const fileName = `${Date.now()}_${file.name}`;
 
-    alert("送信成功！（まだ仮）");
-  };
+  const { error } = await supabase.storage
+    .from("images")
+    .upload(fileName, file);
+
+  if (error) {
+    alert("アップロード失敗");
+    console.error(error);
+    return;
+  }
+
+  alert("アップロード成功！");
+};
 
   return (
     <div style={{ padding: 20 }}>
