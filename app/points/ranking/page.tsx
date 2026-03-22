@@ -10,7 +10,7 @@ type PointPost = {
   team: string;
   mission_key: string;
   quantity: number;
-  status: string;
+  approved: boolean;
 };
 
 export default function PointRankingPage() {
@@ -37,7 +37,7 @@ export default function PointRankingPage() {
     const map: Record<string, number> = {};
 
     pointPosts
-      .filter((p) => p.status === "approved")
+      .filter((p) => p.approved)
       .forEach((p) => {
         const mission = getMissionByKey(p.mission_key);
 
