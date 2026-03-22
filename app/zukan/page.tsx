@@ -63,6 +63,20 @@ export default function Home() {
   const remaining = kanaList.filter((k) => !collected.has(k));
   const isComplete = completedCount === kanaList.length;
   const progressPercent = (completedCount / kanaList.length) * 100;
+  
+  const uniquePosts = Object.values(
+  posts.reduce((acc: any, post: any) => {
+    const key = post.name;
+
+    if (!acc[key]) {
+      acc[key] = { ...post, count: 1 };
+    } else {
+      acc[key].count += 1;
+    }
+
+    return acc;
+  }, {})
+);
 
   return (
     <main style={{ padding: 16, background: "#f6f8ff", minHeight: "100vh" }}>
