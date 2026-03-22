@@ -96,3 +96,6 @@ export default function PostPage() {
     </div>
   );
 }
+
+console.error(error);
+alert(JSON.stringify(error));
