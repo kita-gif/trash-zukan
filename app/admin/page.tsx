@@ -26,18 +26,15 @@ export default function AdminPage() {
   }, []);
 
   const loadPosts = async () => {
-    const { data, error } = await supabase
-      .from("posts") // 🔥 修正
-      .select("*")
-      .order("created_at", { ascending: false });
+  const { data, error } = await supabase
+    .from("posts")
+    .select("*");
 
-    if (error) {
-      console.error(error);
-      return;
-    }
+  console.log("posts:", data);
+  console.error("error:", error);
 
-    setPosts(data || []);
-  };
+  setPosts(data || []);
+};
 
   useEffect(() => {
     if (isAuthed) loadPosts();
