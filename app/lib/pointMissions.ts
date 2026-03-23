@@ -153,7 +153,7 @@ export const pointMissions = [
   adminOnly: false,
   description: "ゴミ図鑑に投稿",
   exampleUrl: "",
-},
+}
 
 ];
 export function getMissionByKey(key: string) {

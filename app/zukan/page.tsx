@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { getSupabase } from "@/lib/supabase";
-const supabase = getSupabase();
 
 export default function ZukanPage() {
   const [posts, setPosts] = useState<any[]>([]);
@@ -11,8 +10,10 @@ export default function ZukanPage() {
 
   useEffect(() => {
     const load = async () => {
+      const supabase = getSupabase(); // ←ここに移動
+
       const { data, error } = await supabase
-        .from("posts") // 🔥 修正
+        .from("posts")
         .select("*")
         .eq("approved", true);
 
@@ -26,10 +27,8 @@ export default function ZukanPage() {
         (a.reading || "").localeCompare(b.reading || "", "ja")
       );
 
-      setPosts(sorted); // 🔥 1回だけ
+      setPosts(sorted);
       setLoading(false);
-
-      console.log("🔥 posts:", data);
     };
 
     load();
